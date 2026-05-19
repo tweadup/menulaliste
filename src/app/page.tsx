@@ -12,10 +12,7 @@ import {
   Home,
   MapPin,
   MessagesSquare,
-  Minus,
-  Plus,
   Search,
-  ShoppingBag,
   X,
 } from "lucide-react";
 import Image from "next/image";
@@ -24,12 +21,6 @@ import { categories, products, restaurant, type Category, type Locale, type Prod
 
 type View = "home" | "categories" | "products";
 
-type CartItem = {
-  product: Product;
-  quantity: number;
-  note: string;
-};
-
 const copy = {
   fr: {
     menu: "MENU",
@@ -37,12 +28,7 @@ const copy = {
     back: "Retour",
     search: "Rechercher",
     intro: "Pour commencer la saison ☀️ en beaute Nos chefs nous ont concocte des mets raffines.",
-    add: "Ajouter a la commande",
-    cart: "Commande",
-    confirm: "Confirmer la commande",
-    note: "Note speciale",
-    empty: "Votre panier est vide",
-    table: "TABLE",
+    close: "Fermer",
     options: "Options disponibles",
     allergens: "Allergenes",
     nutrition: "Nutrition",
@@ -53,12 +39,7 @@ const copy = {
     back: "Back",
     search: "Search",
     intro: "To start the season ☀️ beautifully, our chefs prepared refined dishes.",
-    add: "Add to order",
-    cart: "Order",
-    confirm: "Confirm order",
-    note: "Special note",
-    empty: "Your cart is empty",
-    table: "TABLE",
+    close: "Close",
     options: "Available options",
     allergens: "Allergens",
     nutrition: "Nutrition",
@@ -69,12 +50,7 @@ const copy = {
     back: "رجوع",
     search: "بحث",
     intro: "لبداية الموسم ☀️ بأجمل شكل، حضر طهاتنا أطباقا راقية.",
-    add: "أضف للطلب",
-    cart: "الطلب",
-    confirm: "تأكيد الطلب",
-    note: "ملاحظة خاصة",
-    empty: "السلة فارغة",
-    table: "طاولة",
+    close: "إغلاق",
     options: "الاختيارات",
     allergens: "مسببات الحساسية",
     nutrition: "القيمة الغذائية",
@@ -88,10 +64,6 @@ export default function HomePage() {
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<Product | null>(null);
   const [infoOpen, setInfoOpen] = useState(false);
-  const [cartOpen, setCartOpen] = useState(false);
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const tableNumber =
-    typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("table") ?? "12" : "12";
   const t = copy[locale];
   const activeCategoryData = categories.find((category) => category.id === activeCategory) ?? categories[0];
 
@@ -113,42 +85,11 @@ export default function HomePage() {
     });
   }, [activeCategory, locale, query]);
 
-  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-  const total = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
-
   function openCategory(category: Category) {
     setActiveCategory(category.id);
     setQuery("");
     setView("products");
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }
-
-  function addToCart(product: Product) {
-    setCart((current) => {
-      const existing = current.find((item) => item.product.id === product.id);
-      if (existing) {
-        return current.map((item) =>
-          item.product.id === product.id ? { ...item, quantity: item.quantity + 1 } : item,
-        );
-      }
-      return [...current, { product, quantity: 1, note: "" }];
-    });
-    setSelected(null);
-    setCartOpen(true);
-  }
-
-  function updateQuantity(productId: string, delta: number) {
-    setCart((current) =>
-      current
-        .map((item) =>
-          item.product.id === productId ? { ...item, quantity: Math.max(0, item.quantity + delta) } : item,
-        )
-        .filter((item) => item.quantity > 0),
-    );
-  }
-
-  function updateNote(productId: string, note: string) {
-    setCart((current) => current.map((item) => (item.product.id === productId ? { ...item, note } : item)));
   }
 
   return (
@@ -180,27 +121,14 @@ export default function HomePage() {
             query={query}
             setQuery={setQuery}
             labels={t}
-            cartCount={cartCount}
             onBack={() => setView("categories")}
             onInfo={() => setInfoOpen(true)}
             onSelect={setSelected}
-            onCart={() => setCartOpen(true)}
           />
         )}
       </div>
 
-      {selected && <ProductModal product={selected} locale={locale} labels={t} onClose={() => setSelected(null)} onAdd={addToCart} />}
-      {cartOpen && (
-        <CartDrawer
-          cart={cart}
-          tableNumber={tableNumber}
-          total={total}
-          labels={t}
-          onClose={() => setCartOpen(false)}
-          onQuantity={updateQuantity}
-          onNote={updateNote}
-        />
-      )}
+      {selected && <ProductModal product={selected} locale={locale} labels={t} onClose={() => setSelected(null)} />}
       {infoOpen && <InfoPanel onClose={() => setInfoOpen(false)} />}
     </main>
   );
@@ -219,7 +147,17 @@ function LandingScreen({
 }) {
   return (
     <section className="relative min-h-screen overflow-hidden">
-      <Image src={restaurant.cover} alt="" fill priority sizes="100vw" className="object-cover" />
+      <video
+        className="absolute inset-0 h-full w-full object-cover"
+        autoPlay
+        muted
+        loop
+        playsInline
+        poster={restaurant.cover}
+      >
+        <source src={restaurant.heroVideo} type="video/mp4" />
+      </video>
+      <Image src={restaurant.cover} alt="" fill priority sizes="100vw" className="-z-10 object-cover" />
       <div className="absolute inset-0 bg-[#0b4960]/45" />
       <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/20 to-black/82" />
 
@@ -314,11 +252,9 @@ function ProductsScreen({
   query,
   setQuery,
   labels,
-  cartCount,
   onBack,
   onInfo,
   onSelect,
-  onCart,
 }: {
   category: Category;
   products: Product[];
@@ -326,17 +262,15 @@ function ProductsScreen({
   query: string;
   setQuery: (query: string) => void;
   labels: typeof copy.fr;
-  cartCount: number;
   onBack: () => void;
   onInfo: () => void;
   onSelect: (product: Product) => void;
-  onCart: () => void;
 }) {
   return (
     <section className="min-h-screen bg-[#403c3c] pb-8">
       <div className="sticky top-0 z-20 bg-[#2b2727]/96 backdrop-blur">
         <TopBar onBack={onBack} onInfo={onInfo} compact />
-        <div className="flex items-center gap-3 px-5 pb-4">
+        <div className="px-5 pb-4">
           <label className="flex h-12 flex-1 items-center gap-3 rounded-full bg-white/10 px-4 text-white/80">
             <Search size={19} />
             <input
@@ -346,14 +280,6 @@ function ProductsScreen({
               className="w-full bg-transparent text-base outline-none placeholder:text-white/45"
             />
           </label>
-          <button onClick={onCart} className="relative grid h-12 w-12 place-items-center rounded-full bg-black">
-            <ShoppingBag size={22} />
-            {cartCount > 0 && (
-              <span className="absolute -right-1 -top-1 grid h-6 min-w-6 place-items-center rounded-full bg-[#bba274] px-1 text-xs font-black">
-                {cartCount}
-              </span>
-            )}
-          </button>
         </div>
       </div>
 
@@ -434,13 +360,11 @@ function ProductModal({
   locale,
   labels,
   onClose,
-  onAdd,
 }: {
   product: Product;
   locale: Locale;
   labels: typeof copy.fr;
   onClose: () => void;
-  onAdd: (product: Product) => void;
 }) {
   return (
     <div className="fixed inset-0 z-50 grid place-items-end bg-black/65 sm:place-items-center sm:p-6">
@@ -464,15 +388,14 @@ function ProductModal({
             <h3 className="mb-3 text-xl font-black">{labels.options}</h3>
             <div className="grid gap-2">
               {product.options.map((option) => (
-                <label key={option} className="flex items-center justify-between border border-white/12 bg-white/5 px-4 py-4 text-lg font-semibold">
+                <div key={option} className="border border-white/12 bg-white/5 px-4 py-4 text-lg font-semibold">
                   {option}
-                  <input type="checkbox" className="h-5 w-5 accent-[#bba274]" />
-                </label>
+                </div>
               ))}
             </div>
           </div>
-          <button onClick={() => onAdd(product)} className="flex w-full items-center justify-between rounded-xl bg-black px-5 py-5 text-xl font-black">
-            <span>{labels.add}</span>
+          <button onClick={onClose} className="flex w-full items-center justify-between rounded-xl bg-black px-5 py-5 text-xl font-black">
+            <span>{labels.close}</span>
             <span>MAD {product.price}.00</span>
           </button>
         </div>
@@ -487,78 +410,6 @@ function InfoBlock({ title, value }: { title: string; value: string }) {
       <p className="text-xs font-black uppercase tracking-widest text-[#bba274]">{title}</p>
       <p className="mt-2 text-sm font-semibold text-white/88">{value}</p>
     </div>
-  );
-}
-
-function CartDrawer({
-  cart,
-  tableNumber,
-  total,
-  labels,
-  onClose,
-  onQuantity,
-  onNote,
-}: {
-  cart: CartItem[];
-  tableNumber: string;
-  total: number;
-  labels: typeof copy.fr;
-  onClose: () => void;
-  onQuantity: (productId: string, delta: number) => void;
-  onNote: (productId: string, note: string) => void;
-}) {
-  return (
-    <aside className="fixed inset-0 z-50 flex justify-end bg-black/55">
-      <section className="flex h-full w-full max-w-md flex-col bg-[#282424] text-white shadow-2xl">
-        <header className="flex items-center justify-between border-b border-white/10 p-5">
-          <div>
-            <p className="text-sm font-black uppercase text-[#bba274]">{labels.table} {tableNumber}</p>
-            <h2 className="text-3xl font-black">{labels.cart}</h2>
-          </div>
-          <button onClick={onClose} className="grid h-12 w-12 place-items-center rounded-full bg-white/10">
-            <X size={22} />
-          </button>
-        </header>
-        <div className="flex-1 space-y-3 overflow-auto p-5">
-          {cart.length === 0 && <p className="bg-white/8 p-5 text-center font-semibold text-white/55">{labels.empty}</p>}
-          {cart.map((item) => (
-            <div key={item.product.id} className="border border-white/10 bg-black/20 p-4">
-              <div className="flex gap-3">
-                <Image src={item.product.image} alt="" width={72} height={72} className="h-[72px] w-[72px] object-cover" />
-                <div className="min-w-0 flex-1">
-                  <h3 className="font-black uppercase">{item.product.name.fr}</h3>
-                  <p className="text-sm text-white/55">MAD {item.product.price}.00</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button onClick={() => onQuantity(item.product.id, -1)} className="grid h-9 w-9 place-items-center rounded-full bg-white/10">
-                    <Minus size={16} />
-                  </button>
-                  <span className="w-5 text-center font-black">{item.quantity}</span>
-                  <button onClick={() => onQuantity(item.product.id, 1)} className="grid h-9 w-9 place-items-center rounded-full bg-black">
-                    <Plus size={16} />
-                  </button>
-                </div>
-              </div>
-              <input
-                value={item.note}
-                onChange={(event) => onNote(item.product.id, event.target.value)}
-                placeholder={labels.note}
-                className="mt-3 w-full rounded-none border border-white/10 bg-white/5 px-3 py-3 text-sm outline-none focus:border-[#bba274]"
-              />
-            </div>
-          ))}
-        </div>
-        <footer className="border-t border-white/10 p-5">
-          <div className="mb-4 flex items-center justify-between text-xl font-black">
-            <span>Total</span>
-            <span>MAD {total}.00</span>
-          </div>
-          <button className="w-full rounded-xl bg-[#bba274] px-5 py-5 text-lg font-black text-black disabled:opacity-40" disabled={cart.length === 0}>
-            {labels.confirm}
-          </button>
-        </footer>
-      </section>
-    </aside>
   );
 }
 

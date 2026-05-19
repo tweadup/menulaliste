@@ -35,6 +35,8 @@ export const restaurant = {
   facebook: "https://facebook.com",
   cover:
     "https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=1600&q=85",
+  heroVideo:
+    "https://videos.pexels.com/video-files/3195650/3195650-uhd_2560_1440_25fps.mp4",
   logoMark: "LL",
   openingHours: [
     ["Lundi", "07:00 - 00:00"],
