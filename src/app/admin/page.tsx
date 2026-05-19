@@ -252,18 +252,18 @@ export default function AdminPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f4f1eb] text-neutral-950">
-      <div className="mx-auto grid min-h-screen max-w-7xl lg:grid-cols-[280px_1fr]">
-        <aside className="border-b border-black/10 bg-neutral-950 p-4 text-white lg:sticky lg:top-0 lg:h-screen lg:border-b-0 lg:border-r lg:border-white/10 lg:p-5">
+    <main className="min-h-screen overflow-x-hidden bg-[#f4f1eb] text-neutral-950">
+      <div className="mx-auto grid min-h-screen w-full max-w-7xl overflow-x-hidden lg:grid-cols-[280px_1fr]">
+        <aside className="min-w-0 overflow-hidden border-b border-black/10 bg-neutral-950 p-4 text-white lg:sticky lg:top-0 lg:h-screen lg:border-b-0 lg:border-r lg:border-white/10 lg:p-5">
           <div className="flex items-center gap-3">
             <div className="grid h-12 w-12 place-items-center rounded-full bg-[#b89b6a] font-black">LL</div>
-            <div>
+            <div className="min-w-0">
               <p className="text-xs uppercase tracking-[0.22em] text-white/45">Admin</p>
-              <h1 className="text-xl font-black">{adminRestaurant.name}</h1>
+              <h1 className="truncate text-xl font-black">{adminRestaurant.name}</h1>
             </div>
           </div>
 
-          <nav className="mt-6 flex gap-2 overflow-x-auto pb-1 text-sm font-bold lg:grid lg:overflow-visible">
+          <nav className="mt-6 flex w-full min-w-0 gap-2 overflow-x-auto pb-1 text-sm font-bold lg:grid lg:overflow-visible">
             {[
               ["Dashboard", BarChart3, "dashboard"],
               ["Produits", Store, "produits"],
