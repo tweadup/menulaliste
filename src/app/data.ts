@@ -25,25 +25,25 @@ export type Product = {
 };
 
 export const restaurant = {
-  name: "West 91",
-  tagline: "Restaurant, cafe & lounge",
-  phone: "+212 6 12 34 56 78",
-  email: "contact@west91.ma",
-  address: "91 Avenue Mohammed V, Casablanca",
-  mapUrl: "https://maps.google.com/?q=West%2091%20Casablanca",
+  name: "Restaurant La Liste",
+  tagline: "Restaurant & lounge",
+  phone: "+212662622663",
+  email: "contact@laliste.ma",
+  address: "Islane Hay Mohammedi, Agadir",
+  mapUrl: "https://maps.google.com/?q=Islane%20Hay%20Mohammedi%20Agadir",
   instagram: "https://instagram.com",
   facebook: "https://facebook.com",
   cover:
     "https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=1600&q=85",
-  logoMark: "W91",
+  logoMark: "LL",
   openingHours: [
-    ["Lundi", "08:00 a 23:00"],
-    ["Mardi", "08:00 a 23:00"],
-    ["Mercredi", "08:00 a 23:00"],
-    ["Jeudi", "08:00 a 23:00"],
-    ["Vendredi", "08:00 a 23:00"],
-    ["Samedi", "08:00 a 23:00"],
-    ["Dimanche", "08:00 a 23:00"],
+    ["Lundi", "07:00 - 00:00"],
+    ["Mardi", "07:00 - 00:00"],
+    ["Mercredi", "07:00 - 00:00"],
+    ["Jeudi", "07:00 - 00:00"],
+    ["Vendredi", "07:00 - 00:00"],
+    ["Samedi", "07:00 - 00:00"],
+    ["Dimanche", "07:00 - 00:00"],
   ],
 };
 
@@ -51,7 +51,7 @@ export const categories: Category[] = [
   {
     id: "must",
     name: { fr: "⭐Incontournable⭐", en: "⭐Must Try⭐", ar: "⭐الأكثر طلبا⭐" },
-    description: "Selection signature West 91",
+    description: "Selection signature La Liste",
     image: "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?auto=format&fit=crop&w=1200&q=85",
     featured: true,
   },
@@ -103,7 +103,7 @@ export const products: Product[] = [
   {
     id: "morning-91",
     categoryId: "must",
-    name: { fr: "Morning West 91", en: "Morning West 91", ar: "فطور ويست 91" },
+    name: { fr: "Morning La Liste", en: "Morning La Liste", ar: "فطور لا ليست" },
     description: { fr: "Oeufs, avocat, fromage frais, pain grille", en: "Eggs, avocado, cream cheese, toasted bread", ar: "بيض، أفوكادو، جبن طري وخبز محمص" },
     fullDescription: { fr: "Une assiette complete pour demarrer la journee avec des produits frais et une touche cafe lounge.", en: "A complete breakfast plate with fresh produce and a refined lounge touch.", ar: "طبق فطور متكامل بمكونات طازجة ولمسة راقية." },
     price: 72,
@@ -159,9 +159,9 @@ export const products: Product[] = [
   {
     id: "burger-west-91",
     categoryId: "burgers",
-    name: { fr: "Burger West 91", en: "West 91 Burger", ar: "برغر ويست 91" },
+    name: { fr: "Burger La Liste", en: "La Liste Burger", ar: "برغر لا ليست" },
     description: { fr: "Pain brioche, steak hache, cheddar, salade, tomate, sauce maison", en: "Brioche bun, beef patty, cheddar, lettuce, tomato, house sauce", ar: "خبز بريوش، لحم، شيدر، خس، طماطم وصلصة" },
-    fullDescription: { fr: "Le burger signature West 91 avec steak de boeuf, cheddar fondu, pickles croquants et sauce maison legerement fumee.", en: "The West 91 signature burger with beef patty, melted cheddar, crisp pickles and a lightly smoky house sauce.", ar: "برغر ويست 91 بلحم بقري، شيدر، مخللات وصلصة خاصة." },
+    fullDescription: { fr: "Le burger signature La Liste avec steak de boeuf, cheddar fondu, pickles croquants et sauce maison legerement fumee.", en: "The La Liste signature burger with beef patty, melted cheddar, crisp pickles and a lightly smoky house sauce.", ar: "برغر لا ليست بلحم بقري، شيدر، مخللات وصلصة خاصة." },
     price: 89,
     image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=900&q=80",
     badges: ["Populaire", "Promotion"],
@@ -261,7 +261,7 @@ export const analytics = {
   scans: 12842,
   returning: 38,
   newVisitors: 62,
-  topProducts: ["Burger West 91", "Tagliatelles truffe", "Fondant chocolat"],
+  topProducts: ["Burger La Liste", "Tagliatelles truffe", "Fondant chocolat"],
   topCategories: ["Burgers", "Pates", "Cocktails"],
   period: [
     { label: "Lun", value: 430 },

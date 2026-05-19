@@ -22,7 +22,7 @@ export default function AdminPage() {
       <div className="mx-auto grid min-h-screen max-w-7xl lg:grid-cols-[280px_1fr]">
         <aside className="border-b border-black/10 bg-neutral-950 p-5 text-white lg:border-b-0 lg:border-r lg:border-white/10">
           <div className="flex items-center gap-3">
-            <div className="grid h-12 w-12 place-items-center rounded-full bg-[#b89b6a] font-black">W91</div>
+            <div className="grid h-12 w-12 place-items-center rounded-full bg-[#b89b6a] font-black">LL</div>
             <div>
               <p className="text-xs uppercase tracking-[0.22em] text-white/45">Admin</p>
               <h1 className="text-xl font-black">{restaurant.name}</h1>
@@ -58,7 +58,7 @@ export default function AdminPage() {
           <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-sm font-black uppercase tracking-[0.22em] text-[#967a4f]">Plateforme QR menu</p>
-              <h2 className="mt-1 text-3xl font-black sm:text-4xl">Gestion West 91</h2>
+              <h2 className="mt-1 text-3xl font-black sm:text-4xl">Gestion Restaurant La Liste</h2>
             </div>
             <div className="flex gap-2">
               <Link href="/" className="flex items-center gap-2 rounded-full bg-white px-4 py-3 text-sm font-black shadow-sm">

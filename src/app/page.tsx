@@ -246,9 +246,9 @@ function LandingScreen({
 
         <div className="grid flex-1 place-items-center pb-20 pt-16">
           <div className="text-center">
-            <p className="mb-14 text-right text-5xl font-black tracking-[0.18em] text-white/55">WEST<sup className="text-2xl">91</sup></p>
-            <h1 className="text-[clamp(5.7rem,24vw,12rem)] font-black leading-[0.82] tracking-[0.09em]">
-              WEST<span className="ml-3 align-middle font-serif text-[0.48em] font-normal tracking-normal">91</span>
+            <p className="mb-10 text-right text-4xl font-black uppercase tracking-[0.12em] text-white/55">Restaurant</p>
+            <h1 className="max-w-[680px] text-[clamp(4.4rem,18vw,9rem)] font-black uppercase leading-[0.86] tracking-[0.03em]">
+              La Liste
             </h1>
           </div>
         </div>
@@ -262,7 +262,7 @@ function LandingScreen({
         </button>
 
         <p className="absolute bottom-8 left-1/2 -translate-x-1/2 rounded-full bg-neutral-900/85 px-5 py-2 text-lg font-semibold text-white/70">
-          Powered by <span className="underline">Convivio</span>
+          Powered by <span className="underline">Tweadup</span>
         </p>
       </div>
     </section>
@@ -374,7 +374,7 @@ function ProductsScreen({
             className="grid min-h-[232px] grid-cols-[132px_1fr] bg-[#282424] text-left shadow-lg sm:grid-cols-[190px_1fr]"
           >
             <div className="relative h-full min-h-[232px] overflow-hidden">
-              <Image src={product.image} alt="" fill sizes="190px" className="object-cover" />
+              <Image src={product.image} alt="" fill sizes="190px" className="animate-product-image object-cover" />
             </div>
             <div className="flex min-w-0 flex-col p-6">
               <h2 className="text-[clamp(1.65rem,5vw,2.7rem)] font-black uppercase leading-tight tracking-wide">
@@ -446,7 +446,7 @@ function ProductModal({
     <div className="fixed inset-0 z-50 grid place-items-end bg-black/65 sm:place-items-center sm:p-6">
       <section className="max-h-[92vh] w-full max-w-[760px] overflow-auto rounded-t-[28px] bg-[#282424] text-white shadow-2xl sm:rounded-[28px]">
         <div className="relative h-72">
-          <Image src={product.image} alt="" fill sizes="760px" className="object-cover" />
+          <Image src={product.image} alt="" fill sizes="760px" className="animate-product-image object-cover" />
           <button onClick={onClose} className="absolute right-4 top-4 grid h-12 w-12 place-items-center rounded-full bg-black/85">
             <X size={24} />
           </button>
@@ -569,27 +569,39 @@ function InfoPanel({ onClose }: { onClose: () => void }) {
         <header className="mb-6 flex items-center justify-between">
           <div>
             <p className="text-sm font-black uppercase tracking-[0.22em] text-[#bba274]">Restaurant</p>
-            <h2 className="text-4xl font-black">West 91</h2>
+            <h2 className="text-4xl font-black">Restaurant La Liste</h2>
           </div>
           <button onClick={onClose} className="grid h-12 w-12 place-items-center rounded-full bg-white/10">
             <X size={22} />
           </button>
         </header>
 
-        <div className="grid gap-5">
-          <div className="grid gap-3 text-lg font-semibold text-white/78">
-            <a href={restaurant.mapUrl} target="_blank" className="flex items-center gap-3">
+        <div className="grid gap-6">
+          <div>
+            <p className="mb-2 text-sm font-black uppercase tracking-[0.18em] text-[#bba274]">Adresse</p>
+            <a href={restaurant.mapUrl} target="_blank" className="flex items-center gap-3 text-lg font-semibold text-white/78">
               <MapPin className="text-[#bba274]" /> {restaurant.address}
             </a>
-            <p className="flex items-center gap-3">
-              <Globe2 className="text-[#bba274]" /> {restaurant.email}
+          </div>
+
+          <div>
+            <p className="mb-2 text-sm font-black uppercase tracking-[0.18em] text-[#bba274]">Téléphone</p>
+            <p className="flex items-center gap-3 text-lg font-semibold text-white/78">
+              <MessagesSquare className="text-[#bba274]" /> {restaurant.phone}
             </p>
-            <p className="flex items-center gap-3">
-              <Clock3 className="text-[#bba274]" /> 08:00 a 23:00
+          </div>
+
+          <div>
+            <p className="mb-2 text-sm font-black uppercase tracking-[0.18em] text-[#bba274]">Contact</p>
+            <p className="flex items-center gap-3 text-lg font-semibold text-white/78">
+              <Globe2 className="text-[#bba274]" /> {restaurant.email}
             </p>
           </div>
 
           <div className="grid gap-2">
+            <p className="mb-1 flex items-center gap-3 text-sm font-black uppercase tracking-[0.18em] text-[#bba274]">
+              <Clock3 size={18} /> Horaires d&apos;ouverture
+            </p>
             {restaurant.openingHours.map(([day, hours]) => (
               <div key={day} className="flex justify-between border-b border-white/10 py-2 text-base">
                 <span className="text-white/55">{day}</span>

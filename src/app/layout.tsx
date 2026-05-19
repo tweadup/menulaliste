@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "West 91 | Menu digital",
-  description: "Menu digital premium mobile-first pour West 91.",
+  title: "Restaurant La Liste | Menu digital",
+  description: "Menu digital premium mobile-first pour Restaurant La Liste.",
 };
 
 export default function RootLayout({
