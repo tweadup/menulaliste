@@ -1,26 +1,28 @@
 "use client";
 
+import clsx from "clsx";
 import {
+  ArrowLeft,
   ArrowRight,
   Camera,
+  ChevronDown,
   ChefHat,
   Clock3,
   Globe2,
-  Info,
+  Home,
   MapPin,
   MessagesSquare,
   Minus,
-  Moon,
   Plus,
   Search,
   ShoppingBag,
-  Sparkles,
   X,
 } from "lucide-react";
 import Image from "next/image";
 import { useMemo, useState } from "react";
-import clsx from "clsx";
-import { categories, products, restaurant, type Locale, type Product } from "./data";
+import { categories, products, restaurant, type Category, type Locale, type Product } from "./data";
+
+type View = "home" | "categories" | "products";
 
 type CartItem = {
   product: Product;
@@ -28,101 +30,97 @@ type CartItem = {
   note: string;
 };
 
-const filters = ["Vegetarien", "Vegan", "Sans gluten", "Spicy", "Populaire", "Promotion"];
-
 const copy = {
   fr: {
-    search: "Rechercher un plat, ingredient ou categorie",
+    menu: "MENU",
     info: "Info",
-    open: "Ouvert aujourd'hui",
-    details: "Voir details",
+    back: "Retour",
+    search: "Rechercher",
+    intro: "Pour commencer la saison ☀️ en beaute Nos chefs nous ont concocte des mets raffines.",
     add: "Ajouter a la commande",
     cart: "Commande",
     confirm: "Confirmer la commande",
-    table: "Table",
     note: "Note speciale",
     empty: "Votre panier est vide",
+    table: "TABLE",
     options: "Options disponibles",
     allergens: "Allergenes",
     nutrition: "Nutrition",
-    powered: "Powered by West 91 digital menu",
   },
   en: {
-    search: "Search dish, ingredient or category",
+    menu: "MENU",
     info: "Info",
-    open: "Open today",
-    details: "View details",
+    back: "Back",
+    search: "Search",
+    intro: "To start the season ☀️ beautifully, our chefs prepared refined dishes.",
     add: "Add to order",
     cart: "Order",
     confirm: "Confirm order",
-    table: "Table",
     note: "Special note",
     empty: "Your cart is empty",
+    table: "TABLE",
     options: "Available options",
     allergens: "Allergens",
     nutrition: "Nutrition",
-    powered: "Powered by West 91 digital menu",
   },
   ar: {
-    search: "ابحث عن طبق أو مكون أو تصنيف",
+    menu: "القائمة",
     info: "معلومات",
-    open: "مفتوح اليوم",
-    details: "التفاصيل",
+    back: "رجوع",
+    search: "بحث",
+    intro: "لبداية الموسم ☀️ بأجمل شكل، حضر طهاتنا أطباقا راقية.",
     add: "أضف للطلب",
     cart: "الطلب",
     confirm: "تأكيد الطلب",
-    table: "طاولة",
     note: "ملاحظة خاصة",
     empty: "السلة فارغة",
+    table: "طاولة",
     options: "الاختيارات",
     allergens: "مسببات الحساسية",
     nutrition: "القيمة الغذائية",
-    powered: "مدعوم من West 91 digital menu",
   },
 };
 
-export default function Home() {
+export default function HomePage() {
   const [locale, setLocale] = useState<Locale>("fr");
+  const [view, setView] = useState<View>("home");
+  const [activeCategory, setActiveCategory] = useState(categories[0].id);
   const [query, setQuery] = useState("");
-  const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [selected, setSelected] = useState<Product | null>(null);
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [infoOpen, setInfoOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
-  const [dark, setDark] = useState(false);
+  const [cart, setCart] = useState<CartItem[]>([]);
   const tableNumber =
     typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("table") ?? "12" : "12";
   const t = copy[locale];
+  const activeCategoryData = categories.find((category) => category.id === activeCategory) ?? categories[0];
 
-  const visibleProducts = useMemo(() => {
+  const categoryProducts = useMemo(() => {
     const cleanQuery = query.trim().toLowerCase();
     return products.filter((product) => {
       const category = categories.find((item) => item.id === product.categoryId);
+      const matchesCategory = product.categoryId === activeCategory;
       const searchText = [
         product.name[locale],
         product.description[locale],
+        product.fullDescription[locale],
         product.badges.join(" "),
         category?.name[locale],
       ]
         .join(" ")
         .toLowerCase();
-      const matchesQuery = !cleanQuery || searchText.includes(cleanQuery);
-      const matchesFilters =
-        activeFilters.length === 0 ||
-        activeFilters.every((filter) => product.badges.includes(filter) || (filter === "Promotion" && product.promoted));
-      return product.active && matchesQuery && matchesFilters;
+      return product.active && matchesCategory && (!cleanQuery || searchText.includes(cleanQuery));
     });
-  }, [activeFilters, locale, query]);
+  }, [activeCategory, locale, query]);
 
+  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
   const total = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
 
-  function scrollToCategory(id: string) {
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
-
-  function toggleFilter(filter: string) {
-    setActiveFilters((current) =>
-      current.includes(filter) ? current.filter((item) => item !== filter) : [...current, filter],
-    );
+  function openCategory(category: Category) {
+    setActiveCategory(category.id);
+    setQuery("");
+    setView("products");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function addToCart(product: Product) {
@@ -135,6 +133,7 @@ export default function Home() {
       }
       return [...current, { product, quantity: 1, note: "" }];
     });
+    setSelected(null);
     setCartOpen(true);
   }
 
@@ -153,127 +152,44 @@ export default function Home() {
   }
 
   return (
-    <main
-      dir={locale === "ar" ? "rtl" : "ltr"}
-      className={clsx(
-        "min-h-screen font-sans transition-colors",
-        dark ? "bg-neutral-950 text-white" : "bg-[#f5f2ec] text-neutral-950",
-      )}
-    >
-      <section className="mx-auto min-h-screen w-full max-w-6xl bg-white shadow-2xl shadow-black/10 lg:my-6 lg:min-h-[calc(100vh-3rem)] lg:overflow-hidden lg:rounded-[28px]">
-        <Hero locale={locale} setLocale={setLocale} dark={dark} setDark={setDark} />
+    <main dir={locale === "ar" ? "rtl" : "ltr"} className="min-h-screen bg-[#3f3b3b] text-white">
+      <div className="mx-auto min-h-screen w-full max-w-[760px] bg-[#3f3b3b] shadow-2xl shadow-black/40">
+        {view === "home" && (
+          <LandingScreen
+            locale={locale}
+            setLocale={setLocale}
+            onInfo={() => setInfoOpen(true)}
+            onMenu={() => setView("categories")}
+          />
+        )}
 
-        <div className={clsx("sticky top-0 z-30 border-y backdrop-blur-xl", dark ? "border-white/10 bg-neutral-950/88" : "border-black/10 bg-white/92")}>
-          <div className="mx-auto flex max-w-5xl gap-2 overflow-x-auto px-4 py-3">
-            <button
-              onClick={() => document.getElementById("restaurant-info")?.scrollIntoView({ behavior: "smooth" })}
-              className="flex shrink-0 items-center gap-2 rounded-full border border-neutral-200 px-4 py-2 text-sm font-semibold"
-            >
-              <Info size={16} />
-              {t.info}
-            </button>
-            {categories.map((category) => (
-              <button
-                key={category.id}
-                onClick={() => scrollToCategory(category.id)}
-                className="shrink-0 rounded-full bg-neutral-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#b89b6a]"
-              >
-                {category.name[locale]}
-              </button>
-            ))}
-          </div>
-        </div>
+        {view === "categories" && (
+          <CategoryScreen
+            locale={locale}
+            onBack={() => setView("home")}
+            onInfo={() => setInfoOpen(true)}
+            onOpenCategory={openCategory}
+          />
+        )}
 
-        <div className={clsx("mx-auto max-w-5xl px-4 py-5", dark ? "bg-neutral-950" : "bg-white")}>
-          <div className="grid gap-3 lg:grid-cols-[1fr_auto]">
-            <label className={clsx("flex items-center gap-3 rounded-2xl border px-4 py-3", dark ? "border-white/15 bg-white/5" : "border-neutral-200 bg-neutral-50")}>
-              <Search size={18} className="text-neutral-500" />
-              <input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder={t.search}
-                className="w-full bg-transparent text-sm outline-none placeholder:text-neutral-400"
-              />
-            </label>
-            <button
-              onClick={() => setCartOpen(true)}
-              className="flex items-center justify-center gap-2 rounded-2xl bg-[#b89b6a] px-5 py-3 text-sm font-bold text-white"
-            >
-              <ShoppingBag size={18} />
-              {t.cart} · {cart.reduce((sum, item) => sum + item.quantity, 0)}
-            </button>
-          </div>
+        {view === "products" && (
+          <ProductsScreen
+            category={activeCategoryData}
+            products={categoryProducts}
+            locale={locale}
+            query={query}
+            setQuery={setQuery}
+            labels={t}
+            cartCount={cartCount}
+            onBack={() => setView("categories")}
+            onInfo={() => setInfoOpen(true)}
+            onSelect={setSelected}
+            onCart={() => setCartOpen(true)}
+          />
+        )}
+      </div>
 
-          <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
-            {filters.map((filter) => (
-              <button
-                key={filter}
-                onClick={() => toggleFilter(filter)}
-                className={clsx(
-                  "shrink-0 rounded-full border px-3 py-2 text-xs font-bold transition",
-                  activeFilters.includes(filter)
-                    ? "border-[#b89b6a] bg-[#b89b6a] text-white"
-                    : dark
-                      ? "border-white/15 bg-white/5 text-white"
-                      : "border-neutral-200 bg-white text-neutral-700",
-                )}
-              >
-                {filter}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className={clsx("mx-auto grid max-w-5xl gap-8 px-4 pb-28", dark ? "bg-neutral-950" : "bg-white")}>
-          {categories.map((category) => {
-            const categoryProducts = visibleProducts.filter((product) => product.categoryId === category.id);
-            if (categoryProducts.length === 0) return null;
-
-            return (
-              <section id={category.id} key={category.id} className="scroll-mt-28">
-                <div className="mb-3 flex items-end justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#b89b6a]">{category.description}</p>
-                    <h2 className="mt-1 text-2xl font-black">{category.name[locale]}</h2>
-                  </div>
-                  <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-bold text-neutral-500">
-                    {categoryProducts.length}
-                  </span>
-                </div>
-                <div className="grid gap-3 md:grid-cols-2">
-                  {categoryProducts.map((product) => (
-                    <ProductCard
-                      key={product.id}
-                      product={product}
-                      locale={locale}
-                      onSelect={setSelected}
-                      onAdd={addToCart}
-                      detailsLabel={t.details}
-                      addLabel={t.add}
-                      dark={dark}
-                    />
-                  ))}
-                </div>
-              </section>
-            );
-          })}
-        </div>
-
-        <RestaurantInfo dark={dark} />
-      </section>
-
-      {selected && (
-        <ProductModal
-          product={selected}
-          locale={locale}
-          labels={t}
-          onClose={() => setSelected(null)}
-          onAdd={(product) => {
-            addToCart(product);
-            setSelected(null);
-          }}
-        />
-      )}
+      {selected && <ProductModal product={selected} locale={locale} labels={t} onClose={() => setSelected(null)} onAdd={addToCart} />}
       {cartOpen && (
         <CartDrawer
           cart={cart}
@@ -285,125 +201,231 @@ export default function Home() {
           onNote={updateNote}
         />
       )}
+      {infoOpen && <InfoPanel onClose={() => setInfoOpen(false)} />}
     </main>
   );
 }
 
-function Hero({
+function LandingScreen({
   locale,
   setLocale,
-  dark,
-  setDark,
+  onInfo,
+  onMenu,
 }: {
   locale: Locale;
   setLocale: (locale: Locale) => void;
-  dark: boolean;
-  setDark: (value: boolean) => void;
+  onInfo: () => void;
+  onMenu: () => void;
 }) {
   return (
-    <header className="relative min-h-[480px] overflow-hidden text-white">
-      <div
-        className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: `url(${restaurant.cover})` }}
-      />
-      <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-black/30 to-black/80" />
-      <div className="relative z-10 flex min-h-[480px] flex-col justify-between px-5 py-5 sm:px-8">
-        <nav className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="grid h-12 w-12 place-items-center rounded-full border border-white/30 bg-white/15 text-sm font-black backdrop-blur">
-              {restaurant.logoMark}
-            </div>
-            <div>
-              <p className="text-xs uppercase tracking-[0.24em] text-white/70">{restaurant.tagline}</p>
-              <p className="font-bold">{restaurant.name}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
+    <section className="relative min-h-screen overflow-hidden">
+      <Image src={restaurant.cover} alt="" fill priority sizes="100vw" className="object-cover" />
+      <div className="absolute inset-0 bg-[#0b4960]/45" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/20 to-black/82" />
+
+      <div className="relative z-10 flex min-h-screen flex-col px-5 py-5">
+        <header className="flex items-center justify-between gap-4">
+          <label className="flex h-[74px] min-w-[210px] items-center justify-between rounded-[22px] bg-black px-7 text-2xl font-black shadow-xl">
             <select
-              aria-label="Language"
               value={locale}
               onChange={(event) => setLocale(event.target.value as Locale)}
-              className="h-10 rounded-full border border-white/30 bg-black/30 px-3 text-sm font-semibold text-white outline-none backdrop-blur"
+              className="w-full appearance-none bg-transparent outline-none"
+              aria-label="Language"
             >
-              <option value="fr">FR</option>
-              <option value="en">EN</option>
-              <option value="ar">AR</option>
+              <option value="fr">Français</option>
+              <option value="en">English</option>
+              <option value="ar">العربية</option>
             </select>
-            <button
-              aria-label="Toggle dark mode"
-              onClick={() => setDark(!dark)}
-              className="grid h-10 w-10 place-items-center rounded-full border border-white/30 bg-black/30 backdrop-blur"
-            >
-              <Moon size={18} />
-            </button>
+            <ChevronDown className="pointer-events-none shrink-0" size={30} />
+          </label>
+          <button onClick={onInfo} className="flex h-[68px] items-center gap-3 rounded-[22px] bg-black px-6 text-2xl font-black">
+            <Home size={34} fill="currentColor" />
+            Info
+          </button>
+        </header>
+
+        <div className="grid flex-1 place-items-center pb-20 pt-16">
+          <div className="text-center">
+            <p className="mb-14 text-right text-5xl font-black tracking-[0.18em] text-white/55">WEST<sup className="text-2xl">91</sup></p>
+            <h1 className="text-[clamp(5.7rem,24vw,12rem)] font-black leading-[0.82] tracking-[0.09em]">
+              WEST<span className="ml-3 align-middle font-serif text-[0.48em] font-normal tracking-normal">91</span>
+            </h1>
           </div>
-        </nav>
-        <div className="max-w-xl pb-3">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/15 px-3 py-2 text-xs font-bold backdrop-blur">
-            <Clock3 size={15} />
-            08:00 - 23:00 · ouvert 7j/7
-          </div>
-          <h1 className="text-5xl font-black leading-none sm:text-7xl">{restaurant.name}</h1>
-          <p className="mt-4 max-w-md text-base leading-7 text-white/82">
-            Menu digital premium avec plats signatures, photos, details allergenes et commande a table.
-          </p>
         </div>
+
+        <button
+          onClick={onMenu}
+          className="mx-auto mb-28 flex h-[86px] w-full max-w-[620px] items-center justify-between rounded-[14px] bg-black px-7 text-4xl font-light tracking-wide shadow-2xl"
+        >
+          {copy[locale].menu}
+          <ArrowRight size={42} />
+        </button>
+
+        <p className="absolute bottom-8 left-1/2 -translate-x-1/2 rounded-full bg-neutral-900/85 px-5 py-2 text-lg font-semibold text-white/70">
+          Powered by <span className="underline">Convivio</span>
+        </p>
       </div>
-    </header>
+    </section>
   );
 }
 
-function ProductCard({
-  product,
+function CategoryScreen({
   locale,
-  onSelect,
-  onAdd,
-  detailsLabel,
-  addLabel,
-  dark,
+  onBack,
+  onInfo,
+  onOpenCategory,
 }: {
-  product: Product;
   locale: Locale;
-  onSelect: (product: Product) => void;
-  onAdd: (product: Product) => void;
-  detailsLabel: string;
-  addLabel: string;
-  dark: boolean;
+  onBack: () => void;
+  onInfo: () => void;
+  onOpenCategory: (category: Category) => void;
 }) {
   return (
-    <article className={clsx("grid grid-cols-[116px_1fr] overflow-hidden rounded-2xl border", dark ? "border-white/10 bg-white/5" : "border-neutral-200 bg-white shadow-sm")}>
-      <button onClick={() => onSelect(product)} className="relative min-h-[156px] overflow-hidden">
-        <Image
-          src={product.image}
-          alt=""
-          fill
-          sizes="116px"
-          className="object-cover transition duration-500 hover:scale-105"
-        />
-      </button>
-      <div className="flex min-w-0 flex-col p-3">
-        <div className="flex flex-wrap gap-1">
-          {product.badges.slice(0, 2).map((badge) => (
-            <span key={badge} className="rounded-full bg-[#f0e7d7] px-2 py-1 text-[10px] font-black uppercase text-[#8b6b38]">
-              {badge}
-            </span>
-          ))}
-        </div>
-        <h3 className="mt-2 text-base font-black leading-tight">{product.name[locale]}</h3>
-        <p className="mt-1 line-clamp-2 text-sm leading-5 text-neutral-500">{product.description[locale]}</p>
-        <div className="mt-auto flex items-center justify-between gap-2 pt-3">
-          <strong className="text-base">{product.price} MAD</strong>
-          <div className="flex gap-2">
-            <button onClick={() => onSelect(product)} className="grid h-9 w-9 place-items-center rounded-full border border-neutral-200" title={detailsLabel}>
-              <ArrowRight size={16} />
-            </button>
-            <button onClick={() => onAdd(product)} className="grid h-9 w-9 place-items-center rounded-full bg-neutral-950 text-white" title={addLabel}>
-              <Plus size={16} />
-            </button>
-          </div>
+    <section className="min-h-screen bg-[#403c3c]">
+      <TopBar onBack={onBack} onInfo={onInfo} />
+      <div className="grid gap-8 px-5 py-8">
+        {categories.map((category) => (
+          <button
+            key={category.id}
+            onClick={() => onOpenCategory(category)}
+            className={clsx(
+              "relative h-[170px] overflow-hidden text-white shadow-xl",
+              category.featured && "h-[170px]",
+            )}
+          >
+            <Image src={category.image} alt="" fill sizes="760px" className="object-cover" />
+            <div className="absolute inset-0 bg-black/58" />
+            <div className="absolute inset-0 grid place-items-center">
+              <span className="border-2 border-white px-6 py-3 text-[clamp(1.7rem,6vw,2.6rem)] font-black uppercase leading-none tracking-wide">
+                {category.name[locale]}
+              </span>
+            </div>
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function ProductsScreen({
+  category,
+  products,
+  locale,
+  query,
+  setQuery,
+  labels,
+  cartCount,
+  onBack,
+  onInfo,
+  onSelect,
+  onCart,
+}: {
+  category: Category;
+  products: Product[];
+  locale: Locale;
+  query: string;
+  setQuery: (query: string) => void;
+  labels: typeof copy.fr;
+  cartCount: number;
+  onBack: () => void;
+  onInfo: () => void;
+  onSelect: (product: Product) => void;
+  onCart: () => void;
+}) {
+  return (
+    <section className="min-h-screen bg-[#403c3c] pb-8">
+      <div className="sticky top-0 z-20 bg-[#2b2727]/96 backdrop-blur">
+        <TopBar onBack={onBack} onInfo={onInfo} compact />
+        <div className="flex items-center gap-3 px-5 pb-4">
+          <label className="flex h-12 flex-1 items-center gap-3 rounded-full bg-white/10 px-4 text-white/80">
+            <Search size={19} />
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder={labels.search}
+              className="w-full bg-transparent text-base outline-none placeholder:text-white/45"
+            />
+          </label>
+          <button onClick={onCart} className="relative grid h-12 w-12 place-items-center rounded-full bg-black">
+            <ShoppingBag size={22} />
+            {cartCount > 0 && (
+              <span className="absolute -right-1 -top-1 grid h-6 min-w-6 place-items-center rounded-full bg-[#bba274] px-1 text-xs font-black">
+                {cartCount}
+              </span>
+            )}
+          </button>
         </div>
       </div>
-    </article>
+
+      <header className="px-5 pb-8 pt-5 text-center">
+        <h1 className="text-[clamp(1.9rem,7vw,4rem)] font-black uppercase leading-tight tracking-wide [overflow-wrap:anywhere]">
+          {category.name[locale]}
+        </h1>
+        <p className="mx-auto mt-20 max-w-[680px] px-6 text-center text-[clamp(1.45rem,5vw,2.1rem)] italic leading-snug text-white/92">
+          {labels.intro}
+        </p>
+      </header>
+
+      <div className="grid gap-7 px-1.5">
+        {products.map((product) => (
+          <button
+            key={product.id}
+            onClick={() => onSelect(product)}
+            className="grid min-h-[232px] grid-cols-[132px_1fr] bg-[#282424] text-left shadow-lg sm:grid-cols-[190px_1fr]"
+          >
+            <div className="relative h-full min-h-[232px] overflow-hidden">
+              <Image src={product.image} alt="" fill sizes="190px" className="object-cover" />
+            </div>
+            <div className="flex min-w-0 flex-col p-6">
+              <h2 className="text-[clamp(1.65rem,5vw,2.7rem)] font-black uppercase leading-tight tracking-wide">
+                {product.name[locale]}
+              </h2>
+              <p className="mt-8 line-clamp-3 text-[clamp(1.1rem,3.7vw,1.9rem)] font-medium leading-snug text-white/95">
+                {product.description[locale]}
+              </p>
+              <div className="mt-auto flex items-center justify-between gap-4 pt-7">
+                <strong className="text-[clamp(1.35rem,4.2vw,2rem)] font-black">MAD {product.price}.00</strong>
+                <ArrowRight size={44} strokeWidth={2.5} />
+              </div>
+            </div>
+          </button>
+        ))}
+        {products.length === 0 && (
+          <p className="rounded-2xl bg-[#282424] p-8 text-center text-xl font-semibold text-white/70">
+            Aucun plat trouve.
+          </p>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function TopBar({
+  onBack,
+  onInfo,
+  compact = false,
+}: {
+  onBack: () => void;
+  onInfo: () => void;
+  compact?: boolean;
+}) {
+  return (
+    <header className={clsx("flex items-center justify-between bg-[#2b2727] px-5", compact ? "h-[84px]" : "h-[132px]")}>
+      <button
+        onClick={onBack}
+        className={clsx("grid place-items-center rounded-full bg-white/10", compact ? "h-12 w-12" : "h-20 w-20")}
+        aria-label="Retour"
+      >
+        <ArrowLeft size={compact ? 30 : 42} />
+      </button>
+      <button
+        onClick={onInfo}
+        className="flex h-[64px] items-center gap-3 rounded-[12px] border-2 border-[#9c8b69] px-5 text-2xl font-bold"
+      >
+        <Home size={32} fill="currentColor" />
+        Info
+      </button>
+    </header>
   );
 }
 
@@ -421,44 +443,37 @@ function ProductModal({
   onAdd: (product: Product) => void;
 }) {
   return (
-    <div className="fixed inset-0 z-50 grid place-items-end bg-black/55 p-0 sm:place-items-center sm:p-6">
-      <section className="max-h-[92vh] w-full overflow-auto rounded-t-[28px] bg-white text-neutral-950 shadow-2xl sm:max-w-xl sm:rounded-[28px]">
+    <div className="fixed inset-0 z-50 grid place-items-end bg-black/65 sm:place-items-center sm:p-6">
+      <section className="max-h-[92vh] w-full max-w-[760px] overflow-auto rounded-t-[28px] bg-[#282424] text-white shadow-2xl sm:rounded-[28px]">
         <div className="relative h-72">
-          <Image src={product.image} alt="" fill sizes="(min-width: 640px) 576px, 100vw" className="object-cover" />
-          <button onClick={onClose} className="absolute right-4 top-4 grid h-10 w-10 place-items-center rounded-full bg-white/90">
-            <X size={18} />
+          <Image src={product.image} alt="" fill sizes="760px" className="object-cover" />
+          <button onClick={onClose} className="absolute right-4 top-4 grid h-12 w-12 place-items-center rounded-full bg-black/85">
+            <X size={24} />
           </button>
         </div>
-        <div className="space-y-5 p-5">
+        <div className="space-y-6 p-6">
           <div>
-            <div className="mb-3 flex flex-wrap gap-2">
-              {product.badges.map((badge) => (
-                <span key={badge} className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-black uppercase text-neutral-600">
-                  {badge}
-                </span>
-              ))}
-            </div>
-            <h2 className="text-3xl font-black">{product.name[locale]}</h2>
-            <p className="mt-2 leading-7 text-neutral-600">{product.fullDescription[locale]}</p>
+            <h2 className="text-4xl font-black uppercase">{product.name[locale]}</h2>
+            <p className="mt-4 text-xl leading-relaxed text-white/78">{product.fullDescription[locale]}</p>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <InfoBlock title={labels.allergens} value={product.allergens.length ? product.allergens.join(", ") : "Aucun"} />
             <InfoBlock title={labels.nutrition} value={product.nutrition} />
           </div>
           <div>
-            <h3 className="mb-2 font-black">{labels.options}</h3>
+            <h3 className="mb-3 text-xl font-black">{labels.options}</h3>
             <div className="grid gap-2">
               {product.options.map((option) => (
-                <label key={option} className="flex items-center justify-between rounded-2xl border border-neutral-200 px-4 py-3 text-sm font-semibold">
+                <label key={option} className="flex items-center justify-between border border-white/12 bg-white/5 px-4 py-4 text-lg font-semibold">
                   {option}
-                  <input type="checkbox" className="h-4 w-4 accent-[#b89b6a]" />
+                  <input type="checkbox" className="h-5 w-5 accent-[#bba274]" />
                 </label>
               ))}
             </div>
           </div>
-          <button onClick={() => onAdd(product)} className="flex w-full items-center justify-between rounded-2xl bg-neutral-950 px-5 py-4 font-black text-white">
+          <button onClick={() => onAdd(product)} className="flex w-full items-center justify-between rounded-xl bg-black px-5 py-5 text-xl font-black">
             <span>{labels.add}</span>
-            <span>{product.price} MAD</span>
+            <span>MAD {product.price}.00</span>
           </button>
         </div>
       </section>
@@ -468,9 +483,9 @@ function ProductModal({
 
 function InfoBlock({ title, value }: { title: string; value: string }) {
   return (
-    <div className="rounded-2xl bg-neutral-100 p-4">
-      <p className="text-xs font-black uppercase text-neutral-500">{title}</p>
-      <p className="mt-1 text-sm font-semibold">{value}</p>
+    <div className="bg-white/8 p-4">
+      <p className="text-xs font-black uppercase tracking-widest text-[#bba274]">{title}</p>
+      <p className="mt-2 text-sm font-semibold text-white/88">{value}</p>
     </div>
   );
 }
@@ -493,40 +508,34 @@ function CartDrawer({
   onNote: (productId: string, note: string) => void;
 }) {
   return (
-    <aside className="fixed inset-0 z-50 flex justify-end bg-black/45">
-      <section className="flex h-full w-full max-w-md flex-col bg-white text-neutral-950 shadow-2xl">
-        <header className="flex items-center justify-between border-b border-neutral-200 p-5">
+    <aside className="fixed inset-0 z-50 flex justify-end bg-black/55">
+      <section className="flex h-full w-full max-w-md flex-col bg-[#282424] text-white shadow-2xl">
+        <header className="flex items-center justify-between border-b border-white/10 p-5">
           <div>
-            <p className="text-xs font-black uppercase text-[#b89b6a]">{labels.table} {tableNumber}</p>
-            <h2 className="text-2xl font-black">{labels.cart}</h2>
+            <p className="text-sm font-black uppercase text-[#bba274]">{labels.table} {tableNumber}</p>
+            <h2 className="text-3xl font-black">{labels.cart}</h2>
           </div>
-          <button onClick={onClose} className="grid h-10 w-10 place-items-center rounded-full bg-neutral-100">
-            <X size={18} />
+          <button onClick={onClose} className="grid h-12 w-12 place-items-center rounded-full bg-white/10">
+            <X size={22} />
           </button>
         </header>
         <div className="flex-1 space-y-3 overflow-auto p-5">
-          {cart.length === 0 && <p className="rounded-2xl bg-neutral-100 p-5 text-center font-semibold text-neutral-500">{labels.empty}</p>}
+          {cart.length === 0 && <p className="bg-white/8 p-5 text-center font-semibold text-white/55">{labels.empty}</p>}
           {cart.map((item) => (
-            <div key={item.product.id} className="rounded-2xl border border-neutral-200 p-4">
+            <div key={item.product.id} className="border border-white/10 bg-black/20 p-4">
               <div className="flex gap-3">
-                <Image
-                  src={item.product.image}
-                  alt=""
-                  width={64}
-                  height={64}
-                  className="h-16 w-16 rounded-xl object-cover"
-                />
+                <Image src={item.product.image} alt="" width={72} height={72} className="h-[72px] w-[72px] object-cover" />
                 <div className="min-w-0 flex-1">
-                  <h3 className="font-black">{item.product.name.fr}</h3>
-                  <p className="text-sm text-neutral-500">{item.product.price} MAD</p>
+                  <h3 className="font-black uppercase">{item.product.name.fr}</h3>
+                  <p className="text-sm text-white/55">MAD {item.product.price}.00</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button onClick={() => onQuantity(item.product.id, -1)} className="grid h-8 w-8 place-items-center rounded-full bg-neutral-100">
-                    <Minus size={14} />
+                  <button onClick={() => onQuantity(item.product.id, -1)} className="grid h-9 w-9 place-items-center rounded-full bg-white/10">
+                    <Minus size={16} />
                   </button>
                   <span className="w-5 text-center font-black">{item.quantity}</span>
-                  <button onClick={() => onQuantity(item.product.id, 1)} className="grid h-8 w-8 place-items-center rounded-full bg-neutral-950 text-white">
-                    <Plus size={14} />
+                  <button onClick={() => onQuantity(item.product.id, 1)} className="grid h-9 w-9 place-items-center rounded-full bg-black">
+                    <Plus size={16} />
                   </button>
                 </div>
               </div>
@@ -534,17 +543,17 @@ function CartDrawer({
                 value={item.note}
                 onChange={(event) => onNote(item.product.id, event.target.value)}
                 placeholder={labels.note}
-                className="mt-3 w-full rounded-xl border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-[#b89b6a]"
+                className="mt-3 w-full rounded-none border border-white/10 bg-white/5 px-3 py-3 text-sm outline-none focus:border-[#bba274]"
               />
             </div>
           ))}
         </div>
-        <footer className="border-t border-neutral-200 p-5">
-          <div className="mb-4 flex items-center justify-between text-lg font-black">
+        <footer className="border-t border-white/10 p-5">
+          <div className="mb-4 flex items-center justify-between text-xl font-black">
             <span>Total</span>
-            <span>{total} MAD</span>
+            <span>MAD {total}.00</span>
           </div>
-          <button className="w-full rounded-2xl bg-[#b89b6a] px-5 py-4 font-black text-white disabled:opacity-40" disabled={cart.length === 0}>
+          <button className="w-full rounded-xl bg-[#bba274] px-5 py-5 text-lg font-black text-black disabled:opacity-40" disabled={cart.length === 0}>
             {labels.confirm}
           </button>
         </footer>
@@ -553,48 +562,49 @@ function CartDrawer({
   );
 }
 
-function RestaurantInfo({ dark }: { dark: boolean }) {
+function InfoPanel({ onClose }: { onClose: () => void }) {
   return (
-    <footer id="restaurant-info" className={clsx("border-t px-4 py-8", dark ? "border-white/10 bg-neutral-950 text-white" : "border-neutral-200 bg-[#f5f2ec] text-neutral-950")}>
-      <div className="mx-auto grid max-w-5xl gap-5 md:grid-cols-[1.2fr_1fr]">
-        <div className="rounded-3xl bg-white p-5 text-neutral-950 shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="grid h-12 w-12 place-items-center rounded-full bg-neutral-950 font-black text-white">{restaurant.logoMark}</div>
-            <div>
-              <h2 className="text-2xl font-black">{restaurant.name}</h2>
-              <p className="text-sm text-neutral-500">{restaurant.tagline}</p>
-            </div>
+    <div className="fixed inset-0 z-50 grid place-items-end bg-black/60 sm:place-items-center sm:p-6">
+      <section className="max-h-[92vh] w-full max-w-[620px] overflow-auto rounded-t-[28px] bg-[#282424] p-6 text-white shadow-2xl sm:rounded-[28px]">
+        <header className="mb-6 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-black uppercase tracking-[0.22em] text-[#bba274]">Restaurant</p>
+            <h2 className="text-4xl font-black">West 91</h2>
           </div>
-          <div className="mt-5 grid gap-3 text-sm font-semibold text-neutral-700">
-            <a href={restaurant.mapUrl} className="flex items-center gap-2" target="_blank">
-              <MapPin size={17} /> {restaurant.address}
+          <button onClick={onClose} className="grid h-12 w-12 place-items-center rounded-full bg-white/10">
+            <X size={22} />
+          </button>
+        </header>
+
+        <div className="grid gap-5">
+          <div className="grid gap-3 text-lg font-semibold text-white/78">
+            <a href={restaurant.mapUrl} target="_blank" className="flex items-center gap-3">
+              <MapPin className="text-[#bba274]" /> {restaurant.address}
             </a>
-            <p className="flex items-center gap-2"><Globe2 size={17} /> {restaurant.email}</p>
-            <div className="flex gap-2 pt-2">
-              <a href={restaurant.instagram} className="grid h-10 w-10 place-items-center rounded-full bg-neutral-100" target="_blank"><Camera size={18} /></a>
-              <a href={restaurant.facebook} className="grid h-10 w-10 place-items-center rounded-full bg-neutral-100" target="_blank"><MessagesSquare size={18} /></a>
-              <a href="/admin" className="flex h-10 items-center gap-2 rounded-full bg-neutral-950 px-4 text-sm font-bold text-white"><ChefHat size={16} /> Admin</a>
-            </div>
+            <p className="flex items-center gap-3">
+              <Globe2 className="text-[#bba274]" /> {restaurant.email}
+            </p>
+            <p className="flex items-center gap-3">
+              <Clock3 className="text-[#bba274]" /> 08:00 a 23:00
+            </p>
           </div>
-        </div>
-        <div className="rounded-3xl bg-neutral-950 p-5 text-white">
-          <div className="mb-4 flex items-center gap-2">
-            <Clock3 size={18} className="text-[#b89b6a]" />
-            <h3 className="font-black">Horaires d&apos;ouverture</h3>
-          </div>
+
           <div className="grid gap-2">
             {restaurant.openingHours.map(([day, hours]) => (
-              <div key={day} className="flex items-center justify-between border-b border-white/10 pb-2 text-sm">
-                <span className="text-white/70">{day}</span>
+              <div key={day} className="flex justify-between border-b border-white/10 py-2 text-base">
+                <span className="text-white/55">{day}</span>
                 <strong>{hours}</strong>
               </div>
             ))}
           </div>
-          <p className="mt-5 flex items-center gap-2 text-xs font-semibold text-white/55">
-            <Sparkles size={14} /> Powered by West 91 digital menu
-          </p>
+
+          <div className="flex gap-2 pt-2">
+            <a href={restaurant.instagram} className="grid h-12 w-12 place-items-center rounded-full bg-white/10" target="_blank"><Camera size={20} /></a>
+            <a href={restaurant.facebook} className="grid h-12 w-12 place-items-center rounded-full bg-white/10" target="_blank"><MessagesSquare size={20} /></a>
+            <a href="/admin" className="flex h-12 items-center gap-2 rounded-full bg-[#bba274] px-5 text-sm font-black text-black"><ChefHat size={17} /> Admin</a>
+          </div>
         </div>
-      </div>
-    </footer>
+      </section>
+    </div>
   );
 }

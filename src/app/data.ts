@@ -4,6 +4,8 @@ export type Category = {
   id: string;
   name: Record<Locale, string>;
   description: string;
+  image: string;
+  featured?: boolean;
 };
 
 export type Product = {
@@ -32,7 +34,7 @@ export const restaurant = {
   instagram: "https://instagram.com",
   facebook: "https://facebook.com",
   cover:
-    "https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=1600&q=85",
+    "https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=1600&q=85",
   logoMark: "W91",
   openingHours: [
     ["Lundi", "08:00 a 23:00"],
@@ -46,23 +48,61 @@ export const restaurant = {
 };
 
 export const categories: Category[] = [
-  { id: "breakfast", name: { fr: "Petit-dejeuner", en: "Breakfast", ar: "فطور" }, description: "Classiques matinaux" },
-  { id: "starters", name: { fr: "Entrees", en: "Starters", ar: "مقبلات" }, description: "A partager" },
-  { id: "salads", name: { fr: "Salades", en: "Salads", ar: "سلطات" }, description: "Frais et equilibre" },
-  { id: "pasta", name: { fr: "Pates", en: "Pasta", ar: "معكرونة" }, description: "Sauces maison" },
-  { id: "burgers", name: { fr: "Burgers", en: "Burgers", ar: "برغر" }, description: "Pain brioche" },
-  { id: "meat", name: { fr: "Viandes", en: "Meat", ar: "لحوم" }, description: "Grillades premium" },
-  { id: "fish", name: { fr: "Poissons", en: "Fish", ar: "أسماك" }, description: "Selon arrivage" },
-  { id: "desserts", name: { fr: "Desserts", en: "Desserts", ar: "حلويات" }, description: "Douceurs" },
-  { id: "drinks", name: { fr: "Boissons", en: "Drinks", ar: "مشروبات" }, description: "Froides" },
-  { id: "coffee", name: { fr: "Cafes", en: "Coffee", ar: "قهوة" }, description: "Barista" },
-  { id: "cocktails", name: { fr: "Cocktails", en: "Cocktails", ar: "كوكتيلات" }, description: "Signature" },
+  {
+    id: "must",
+    name: { fr: "⭐Incontournable⭐", en: "⭐Must Try⭐", ar: "⭐الأكثر طلبا⭐" },
+    description: "Selection signature West 91",
+    image: "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?auto=format&fit=crop&w=1200&q=85",
+    featured: true,
+  },
+  {
+    id: "cold-starters",
+    name: { fr: "Entrees froides", en: "Cold starters", ar: "مقبلات باردة" },
+    description: "Fraicheur et assiettes a partager",
+    image: "https://images.unsplash.com/photo-1600335895229-6e75511892c8?auto=format&fit=crop&w=1200&q=85",
+  },
+  {
+    id: "hot-starters",
+    name: { fr: "Entrees chaudes", en: "Hot starters", ar: "مقبلات ساخنة" },
+    description: "Cuisine chaude et croustillante",
+    image: "https://images.unsplash.com/photo-1541014741259-de529411b96a?auto=format&fit=crop&w=1200&q=85",
+  },
+  {
+    id: "sushis",
+    name: { fr: "Sushis", en: "Sushi", ar: "سوشي" },
+    description: "Pieces fines et sauces maison",
+    image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=1200&q=85",
+  },
+  {
+    id: "healthy-bowls",
+    name: { fr: "Healthy bowls", en: "Healthy bowls", ar: "أطباق صحية" },
+    description: "Legumes, cereales et sauces legeres",
+    image: "https://images.unsplash.com/photo-1543352634-a1c51d9f1fa7?auto=format&fit=crop&w=1200&q=85",
+  },
+  {
+    id: "burgers",
+    name: { fr: "Burgers", en: "Burgers", ar: "برغر" },
+    description: "Pain brioche et sauce signature",
+    image: "https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=1200&q=85",
+  },
+  {
+    id: "desserts",
+    name: { fr: "Desserts", en: "Desserts", ar: "حلويات" },
+    description: "Douceurs maison",
+    image: "https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=1200&q=85",
+  },
+  {
+    id: "drinks",
+    name: { fr: "Boissons", en: "Drinks", ar: "مشروبات" },
+    description: "Cocktails, cafes et jus frais",
+    image: "https://images.unsplash.com/photo-1544145945-f90425340c7e?auto=format&fit=crop&w=1200&q=85",
+  },
 ];
 
 export const products: Product[] = [
   {
     id: "morning-91",
-    categoryId: "breakfast",
+    categoryId: "must",
     name: { fr: "Morning West 91", en: "Morning West 91", ar: "فطور ويست 91" },
     description: { fr: "Oeufs, avocat, fromage frais, pain grille", en: "Eggs, avocado, cream cheese, toasted bread", ar: "بيض، أفوكادو، جبن طري وخبز محمص" },
     fullDescription: { fr: "Une assiette complete pour demarrer la journee avec des produits frais et une touche cafe lounge.", en: "A complete breakfast plate with fresh produce and a refined lounge touch.", ar: "طبق فطور متكامل بمكونات طازجة ولمسة راقية." },
@@ -76,7 +116,7 @@ export const products: Product[] = [
   },
   {
     id: "burrata",
-    categoryId: "starters",
+    categoryId: "cold-starters",
     name: { fr: "Burrata tomate confite", en: "Burrata & tomato confit", ar: "بوراتا بالطماطم" },
     description: { fr: "Burrata cremeuse, tomate confite, pesto basilic", en: "Creamy burrata, tomato confit, basil pesto", ar: "بوراتا كريمية، طماطم وبيستو" },
     fullDescription: { fr: "Burrata italienne servie avec tomates confites, huile d'olive vierge et pesto basilic maison.", en: "Italian burrata served with tomato confit, virgin olive oil and house basil pesto.", ar: "بوراتا إيطالية مع طماطم، زيت زيتون وبيستو منزلي." },
@@ -90,7 +130,7 @@ export const products: Product[] = [
   },
   {
     id: "salad-atlas",
-    categoryId: "salads",
+    categoryId: "healthy-bowls",
     name: { fr: "Salade Atlas", en: "Atlas Salad", ar: "سلطة أطلس" },
     description: { fr: "Quinoa, legumes croquants, feta, citron", en: "Quinoa, crisp vegetables, feta, lemon", ar: "كينوا، خضار مقرمشة، فيتا وليمون" },
     fullDescription: { fr: "Une salade lumineuse aux legumes de saison, quinoa, feta, herbes fraiches et vinaigrette citronnee.", en: "A bright seasonal salad with quinoa, feta, fresh herbs and lemon dressing.", ar: "سلطة موسمية بالكينوا والفيتا والأعشاب وصلصة الليمون." },
@@ -104,7 +144,7 @@ export const products: Product[] = [
   },
   {
     id: "truffle-pasta",
-    categoryId: "pasta",
+    categoryId: "must",
     name: { fr: "Tagliatelles truffe", en: "Truffle tagliatelle", ar: "تالياتيلي بالكمأة" },
     description: { fr: "Creme de truffe, parmesan, champignons", en: "Truffle cream, parmesan, mushrooms", ar: "كريمة الكمأة، بارميزان وفطر" },
     fullDescription: { fr: "Tagliatelles fraiches nappees d'une creme de truffe onctueuse, copeaux de parmesan et champignons poeles.", en: "Fresh tagliatelle with silky truffle cream, parmesan shavings and sauteed mushrooms.", ar: "تالياتيلي طازجة بكريمة الكمأة والبارميزان والفطر." },
@@ -133,7 +173,7 @@ export const products: Product[] = [
   },
   {
     id: "beef-filet",
-    categoryId: "meat",
+    categoryId: "hot-starters",
     name: { fr: "Filet de boeuf", en: "Beef filet", ar: "فيليه لحم" },
     description: { fr: "Puree maison, jus reduit, legumes rotis", en: "House mash, reduced jus, roasted vegetables", ar: "بطاطس مهروسة، صلصة وخضار مشوية" },
     fullDescription: { fr: "Filet tendre grille a la commande, accompagne de puree maison, jus reduit et legumes de saison rotis.", en: "Tender filet grilled to order with house mash, reduced jus and seasonal roasted vegetables.", ar: "فيليه مشوي حسب الطلب مع بطاطس وخضار موسمية." },
@@ -147,7 +187,7 @@ export const products: Product[] = [
   },
   {
     id: "salmon",
-    categoryId: "fish",
+    categoryId: "sushis",
     name: { fr: "Saumon grille", en: "Grilled salmon", ar: "سلمون مشوي" },
     description: { fr: "Saumon, riz safrane, legumes verts", en: "Salmon, saffron rice, green vegetables", ar: "سلمون، أرز بالزعفران وخضار" },
     fullDescription: { fr: "Pave de saumon grille, riz safrane, legumes verts et beurre citronne.", en: "Grilled salmon fillet, saffron rice, green vegetables and lemon butter.", ar: "قطعة سلمون مشوية مع أرز وخضار وزبدة الليمون." },
@@ -189,7 +229,7 @@ export const products: Product[] = [
   },
   {
     id: "flat-white",
-    categoryId: "coffee",
+    categoryId: "drinks",
     name: { fr: "Flat white", en: "Flat white", ar: "فلات وايت" },
     description: { fr: "Espresso double, lait micro-mousse", en: "Double espresso, micro-foam milk", ar: "إسبريسو مزدوج وحليب" },
     fullDescription: { fr: "Cafe intense et texture soyeuse, prepare au bar avec grains selectionnes.", en: "Intense coffee and silky texture, brewed with selected beans.", ar: "قهوة مركزة بقوام ناعم." },
@@ -203,7 +243,7 @@ export const products: Product[] = [
   },
   {
     id: "sunset-91",
-    categoryId: "cocktails",
+    categoryId: "drinks",
     name: { fr: "Sunset 91", en: "Sunset 91", ar: "سنست 91" },
     description: { fr: "Ananas, passion, citron vert, sirop epice", en: "Pineapple, passion fruit, lime, spiced syrup", ar: "أناناس، باشن فروت، ليمون وشراب متبل" },
     fullDescription: { fr: "Cocktail signature sans alcool, tropical, acidule et legerement epice.", en: "Signature alcohol-free cocktail, tropical, tangy and lightly spiced.", ar: "كوكتيل مميز بدون كحول بنكهة استوائية." },
